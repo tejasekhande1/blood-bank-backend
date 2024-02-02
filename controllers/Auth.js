@@ -129,11 +129,11 @@ exports.login = async (req, res) => {
         if (!email || !password) {
             return res.status(401).json({
                 success: false,
-                message: `Both feilds are required`,
+                message: `Both fields are required`,
             });
         }
 
-        const user = User.findOne({ email });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -141,11 +141,11 @@ exports.login = async (req, res) => {
             });
         }
 
-        if (await bcrypt.compare(password, user.password)) {
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (passwordMatch) {
             const payload = {
                 id: user._id,
                 email: user.email,
-                role: user.accountType,
             };
             const token = jwt.sign(payload, process.env.SECRET_KEY, {
                 expiresIn: "2h",
@@ -155,14 +155,16 @@ exports.login = async (req, res) => {
             user.password = undefined;
 
             const options = {
-                expires: Date.now() + 3 * 24 * 60 * 60 * 100,
+                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+                httpOnly: true,
             };
 
-            return res.cookies("token", token, options).status(200).json({
+            res.cookie("token", token, options);
+            return res.status(200).json({
                 success: true,
                 token,
                 user,
-                message: "User loggied in successfully",
+                message: "User logged in successfully",
             });
         } else {
             return res.status(401).json({
@@ -173,11 +175,12 @@ exports.login = async (req, res) => {
     } catch (error) {
         return res.status(400).json({
             success: false,
-            message: `Error while loging user : ${error.message}`,
+            message: `Error while logging in user: ${error.message}`,
             error: error,
         });
     }
 };
+
 
 exports.changePassword = async (req, res) => {
     try {
