@@ -230,3 +230,21 @@ exports.changePassword = async (req, res) => {
         });
     }
 };
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).json({
+            success: true,
+            message: "Users retrieved successfully",
+            data: users
+        });
+    } catch (error) {
+        console.error("Error occurred while fetching users:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error occurred while fetching users",
+            error: error.message
+        });
+    }
+}
