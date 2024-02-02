@@ -3,11 +3,12 @@ const mongoose = require('mongoose');
 const profileSchema = new mongoose.Schema({
     contactNumber: {
         type: String,
-        required: true
+    },
+    age: {
+        type: String,
     },
     bloodGroup: {
         type: String,
-        required: true
     }
 })
 
