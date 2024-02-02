@@ -13,6 +13,9 @@ app.get("/", async (req, res) => {
     })
 })
 
+const { dbConnect } = require("./config/database");
+dbConnect();
+
 app.listen(PORT, () => {
     console.log("Server Listening at ", PORT);
 });
