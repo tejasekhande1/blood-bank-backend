@@ -9,13 +9,6 @@ require("dotenv").config();
 exports.sendOTP = async (req, res) => {
     try {
         const { email } = req.body;
-        const checkedUserExist = await User.findOne({ email });
-        if (checkedUserExist) {
-            return res.status(401).json({
-                success: false,
-                message: "User already exists",
-            });
-        }
 
         var otp = OTPGenerator.generate(6, {
             upperCaseAlphabets: false,
@@ -83,9 +76,6 @@ exports.signUp = async (req, res) => {
         const recentOTP = await OTP.find({ email })
             .sort({ createdAt: -1 })
             .limit(1);
-
-        console.log("Recent OTP -> ", recentOTP[0].otp);
-        console.log("OTP -> ", otp);
 
         if (recentOTP.length === 0 || recentOTP[0].otp !== otp) {
             return res.status(400).json({
@@ -184,18 +174,21 @@ exports.login = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
     try {
-        const { oldPassword, newPassword, confirmedNewPassword } = req.body;
 
-        if (newPassword !== confirmedNewPassword) {
+        const { email, otp, password } = req.body;
+
+        const recentOTP = await OTP.find({ email })
+            .sort({ createdAt: -1 })
+            .limit(1);
+
+        if (recentOTP.length === 0 || recentOTP[0].otp !== otp) {
             return res.status(400).json({
                 success: false,
-                message: "New password and confirmed new password do not match.",
+                message: `Error in validating otp`,
             });
         }
 
-        const userId = req.user.id;
-
-        const user = await User.findById(userId);
+        const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(404).json({
@@ -204,19 +197,9 @@ exports.changePassword = async (req, res) => {
             });
         }
 
-        const isOldPasswordCorrect = await bcrypt.compare(
-            oldPassword,
-            user.password
-        );
 
-        if (!isOldPasswordCorrect) {
-            return res.status(401).json({
-                success: false,
-                message: "Incorrect old password.",
-            });
-        }
 
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        const hashedNewPassword = await bcrypt.hash(password, 10);
 
         user.password = hashedNewPassword;
         await user.save();
