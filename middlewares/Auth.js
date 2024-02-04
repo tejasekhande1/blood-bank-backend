@@ -4,8 +4,11 @@ const User = require("../models/User");
 
 exports.auth = async (req, res, next) => {
     try {
+
         const token =
-            req.cookies || req.header("Authorizattion").replace("Bearer ", "");
+            req.cookies || req.header("Authorization").replace("Bearer ", "");
+
+
         if (!token) {
             return res.status(401).json({
                 success: false,

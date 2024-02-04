@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const PORT = process.env.PORT || 4000;
 const userRoutes = require('./routes/Auth')
+const bloodRoutes = require('./routes/Blood');
 
 app.use(express.json());
 
@@ -18,6 +19,7 @@ const { dbConnect } = require("./config/database");
 dbConnect();
 
 app.use("/api/v1/auth", userRoutes);
+app.use("/api/v1/blood", bloodRoutes);
 
 app.listen(PORT, () => {
     console.log("Server Listening at ", PORT);
