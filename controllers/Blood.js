@@ -33,6 +33,7 @@ exports.addBloodRequest = async (req, res) => {
 exports.getBloodRequestsForUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
+        user.bloodRequest = user.bloodRequest.sort((a, b) => b.postedOn - a.postedOn);
 
         if (!user) {
             return res.status(404).json({
