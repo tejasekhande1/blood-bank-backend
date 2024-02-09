@@ -60,7 +60,7 @@ exports.getBloodRequestsForUser = async (req, res) => {
 
 exports.getAllBloodRequests = async (req, res) => {
     try {
-        const bloodRequests = await BloodRequest.find();
+        const bloodRequests = await BloodRequest.find().sort({ postedOn: -1 });
 
         return res.status(200).json({
             success: true,
