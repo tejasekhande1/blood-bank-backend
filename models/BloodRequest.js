@@ -47,6 +47,10 @@ const bloodRequestSchema = new mongoose.Schema({
     },
     comments: {
         type: String
+    },
+    postedOn:{
+        type:Date,
+        default:Date.now()
     }
 })
 

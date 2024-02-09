@@ -123,7 +123,10 @@ exports.login = async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate([
+            { path: 'profile' }
+        ]);
+
         if (!user) {
             return res.status(401).json({
                 success: false,
