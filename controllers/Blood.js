@@ -75,3 +75,33 @@ exports.getAllBloodRequests = async (req, res) => {
         });
     }
 };
+
+exports.deleteBloodRequest = async (req, res) => {
+    try {
+        const { requestId } = req.params; 
+        const { id: userId } = req.user;
+
+        const user = await User.findByIdAndUpdate(userId, { $pull: { bloodRequest: requestId } }, { new: true });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        await BloodRequest.findByIdAndDelete(requestId);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Blood request deleted successfully'
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to delete blood request',
+            error: error.message
+        });
+    }
+}
