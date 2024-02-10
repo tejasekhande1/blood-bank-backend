@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const bloodRequestSchema = new mongoose.Schema({
-        name: {
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
+    name: {
         type: String,
         required: true
     },
@@ -48,9 +52,9 @@ const bloodRequestSchema = new mongoose.Schema({
     comments: {
         type: String
     },
-    postedOn:{
-        type:Date,
-        default:Date.now()
+    postedOn: {
+        type: Date,
+        default: Date.now()
     }
 })
 

@@ -14,6 +14,9 @@ exports.addBloodRequest = async (req, res) => {
             });
         }
 
+        newBloodRequest.user = user._id;
+        await newBloodRequest.save();
+
         return res.status(201).json({
             success: true,
             message: 'Blood request created successfully',
@@ -59,7 +62,15 @@ exports.getBloodRequests = async (req, res) => {
 
 exports.getAllBloodRequests = async (req, res) => {
     try {
-        const bloodRequests = await BloodRequest.find().sort({ postedOn: -1 });
+        const bloodRequests = await BloodRequest.find().sort({ postedOn: -1 })
+            .populate({
+                path: 'user',
+                select: 'name email profile',
+                populate: {
+                    path: 'profile',
+                    select: 'contactNumber age bloodGroup'
+                }
+            }).lean();;
 
         return res.status(200).json({
             success: true,
@@ -78,7 +89,7 @@ exports.getAllBloodRequests = async (req, res) => {
 
 exports.deleteBloodRequest = async (req, res) => {
     try {
-        const { requestId } = req.params; 
+        const { requestId } = req.params;
         const { id: userId } = req.user;
 
         const user = await User.findByIdAndUpdate(userId, { $pull: { bloodRequest: requestId } }, { new: true });
@@ -97,10 +108,48 @@ exports.deleteBloodRequest = async (req, res) => {
             message: 'Blood request deleted successfully'
         });
     } catch (error) {
-        console.error(error);
         return res.status(500).json({
             success: false,
             message: 'Failed to delete blood request',
+            error: error.message
+        });
+    }
+}
+
+exports.getBloodRequestsOnSearch = async (req, res) => {
+    try {
+
+        const { search } = req.query;
+
+        if (!search) {
+            return res.status(400).json({
+                success: false,
+                message: 'Search query parameter is required'
+            });
+        }
+
+        const bloodRequests = await BloodRequest.find({
+            name: { $regex: new RegExp(search, 'i') }
+        }).populate({
+            path: 'user',
+            select: 'name email profile',
+            populate: {
+                path: 'profile',
+                select: 'contactNumber age bloodGroup'
+            }
+        }).lean();
+
+
+        return res.status(200).json({
+            success: true,
+            message: 'Blood requests retrieved successfully',
+            data: bloodRequests
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to get blood requests',
             error: error.message
         });
     }
