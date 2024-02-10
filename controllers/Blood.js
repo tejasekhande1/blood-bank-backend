@@ -142,8 +142,6 @@ exports.getBloodRequestsByFilter = async (req, res) => {
             query.city = city;
         }
 
-        console.log("Query -> ", query);
-
         const bloodRequests = await BloodRequest.find(query).populate({
             path: 'user',
             select: 'name email profile',
@@ -160,7 +158,6 @@ exports.getBloodRequestsByFilter = async (req, res) => {
             data: bloodRequests
         });
     } catch (error) {
-        console.error(error);
         return res.status(500).json({
             success: false,
             message: 'Failed to get blood requests',
@@ -168,3 +165,38 @@ exports.getBloodRequestsByFilter = async (req, res) => {
         });
     }
 }
+
+exports.searchDonar = async (req, res) => {
+    try {
+        const { search } = req.query;
+        const { bloodGroup, state, city } = req.body;
+
+        const query = {
+            name: { $regex: new RegExp(search, 'i') }
+        };
+
+        if (bloodGroup) query.bloodGroup = bloodGroup;
+        if (state) query.state = state;
+        if (city) query.city = city;
+
+        const donors = await User.find(query)
+            .populate({
+                path: 'profile',
+                select: 'availability',
+                match: { availability: 'yes' }
+            });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Donors retrieved successfully',
+            data: donors
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to search for donors',
+            error: error.message
+        });
+    }
+};
