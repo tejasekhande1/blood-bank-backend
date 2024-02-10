@@ -3,17 +3,16 @@ const User = require('../models/User');
 
 exports.addBloodRequest = async (req, res) => {
     try {
+        const { id: userId } = req.user;
         const newBloodRequest = await BloodRequest.create(req.body);
-        const user = await User.findById(req.user.id);
+        const user = await User.findByIdAndUpdate(userId, { $push: { bloodRequest: newBloodRequest._id } }, { new: true });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: 'User not found'
             });
         }
-
-        user.bloodRequest.push(newBloodRequest._id);
-        await user.save();
 
         return res.status(201).json({
             success: true,
@@ -30,10 +29,11 @@ exports.addBloodRequest = async (req, res) => {
     }
 }
 
-exports.getBloodRequestsForUser = async (req, res) => {
+
+exports.getBloodRequests = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
-        user.bloodRequest = user.bloodRequest.sort((a, b) => b.postedOn - a.postedOn);
+        const { id: userId } = req.user;
+        const user = await User.findById(userId).populate('bloodRequest');
 
         if (!user) {
             return res.status(404).json({
@@ -41,8 +41,6 @@ exports.getBloodRequestsForUser = async (req, res) => {
                 message: 'User not found'
             });
         }
-
-        await user.populate('bloodRequest');
 
         return res.status(200).json({
             success: true,
@@ -53,11 +51,11 @@ exports.getBloodRequestsForUser = async (req, res) => {
         console.error(error);
         return res.status(500).json({
             success: false,
-            message: 'Failed to retrieve blood requests for user',
+            message: 'Failed to retrieve blood requests',
             error: error.message
         });
     }
-};
+}
 
 exports.getAllBloodRequests = async (req, res) => {
     try {
