@@ -23,6 +23,8 @@ exports.updateProfileDetails = async (req, res) => {
 
         const updatedProfile = await Profile.create(req.body)
         user.profile = updatedProfile._id
+        updatedProfile.user = user._id;
+        await updatedProfile.save();
         await user.save();
 
         return res.status(200).json({
@@ -124,7 +126,7 @@ exports.updateNotification = async (req, res) => {
         notification.status = "read";
         await notification.save();
 
-        return res.status(404).json({
+        return res.status(200).json({
             success: true,
             message: `Notification updated successfully`,
             data: notification
@@ -134,6 +136,36 @@ exports.updateNotification = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to update notifications',
+            error: error.message
+        });
+    }
+}
+
+exports.updateUserAvailability = async (req, res) => {
+    try {
+        const { availability } = req.body;
+        console.log("User Id -> ", req.user.id);
+        let userProfile = await Profile.findOneAndUpdate({ user: req.user.id }, { availability }, { new: true });
+
+        if (!userProfile) {
+            return res.status(404).json({
+                success: false,
+                message: 'Profile not found'
+            });
+        }
+
+        console.log("Profile -> ", userProfile);
+        console.log("User Availability -> ", userProfile.availability);
+        return res.status(200).json({
+            success: true,
+            message: `Availability updated successfully`,
+            data: userProfile
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to update user availability',
             error: error.message
         });
     }
