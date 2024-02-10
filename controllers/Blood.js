@@ -62,7 +62,8 @@ exports.getBloodRequests = async (req, res) => {
 
 exports.getAllBloodRequests = async (req, res) => {
     try {
-        const bloodRequests = await BloodRequest.find().sort({ postedOn: -1 })
+        const bloodRequests = await BloodRequest.find({ user: { $ne: req.user.id } })
+            .sort({ postedOn: -1 })
             .populate({
                 path: 'user',
                 select: 'name email profile',
@@ -70,7 +71,8 @@ exports.getAllBloodRequests = async (req, res) => {
                     path: 'profile',
                     select: 'contactNumber age bloodGroup'
                 }
-            }).lean();;
+            })
+            .lean();
 
         return res.status(200).json({
             success: true,
@@ -86,6 +88,7 @@ exports.getAllBloodRequests = async (req, res) => {
         });
     }
 };
+
 
 exports.deleteBloodRequest = async (req, res) => {
     try {
