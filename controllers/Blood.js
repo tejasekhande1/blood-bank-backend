@@ -116,21 +116,32 @@ exports.deleteBloodRequest = async (req, res) => {
     }
 }
 
-exports.getBloodRequestsOnSearch = async (req, res) => {
+exports.getBloodRequestsByFilter = async (req, res) => {
     try {
 
         const { search } = req.query;
 
-        if (!search) {
-            return res.status(400).json({
-                success: false,
-                message: 'Search query parameter is required'
-            });
+        const { bloodGroup, state, city } = req.body;
+
+        const query = {
+            name: { $regex: new RegExp(search, 'i') }
+        };
+
+        if (bloodGroup) {
+            query.bloodGroup = bloodGroup;
         }
 
-        const bloodRequests = await BloodRequest.find({
-            name: { $regex: new RegExp(search, 'i') }
-        }).populate({
+        if (state) {
+            query.state = state;
+        }
+
+        if (city) {
+            query.city = city;
+        }
+
+        console.log("Query -> ", query);
+
+        const bloodRequests = await BloodRequest.find(query).populate({
             path: 'user',
             select: 'name email profile',
             populate: {
