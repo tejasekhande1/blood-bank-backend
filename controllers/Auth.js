@@ -97,7 +97,8 @@ exports.signUp = async (req, res) => {
             email,
             password: hashedPassword,
             profile: profile._id,
-        });
+        }).select("name email profile")
+            .populate('profile');
 
         return res.status(200).json({
             status: true,
@@ -123,9 +124,10 @@ exports.login = async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ email }).populate([
-            { path: 'profile' }
-        ]);
+        const user = await User.findOne({ email })
+            .select('name email profile password')
+            .populate('profile');
+
 
         if (!user) {
             return res.status(401).json({

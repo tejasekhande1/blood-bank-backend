@@ -122,9 +122,7 @@ exports.deleteBloodRequest = async (req, res) => {
 exports.getBloodRequestsByFilter = async (req, res) => {
     try {
 
-        const { search } = req.query;
-
-        const { bloodGroup, state, city } = req.body;
+        const { search, bloodGroup, state, city } = req.query;
 
         const query = {
             name: { $regex: new RegExp(search, 'i') }
@@ -168,8 +166,7 @@ exports.getBloodRequestsByFilter = async (req, res) => {
 
 exports.searchDonar = async (req, res) => {
     try {
-        const { search } = req.query;
-        const { bloodGroup, state, city } = req.body;
+        const { search, bloodGroup, state, city } = req.query;
 
         const query = {
             name: { $regex: new RegExp(search, 'i') }
