@@ -85,24 +85,25 @@ exports.addNotification = async (req, res) => {
 
 exports.getNotifications = async (req, res) => {
     try {
-
-        const userId = req.user.id
-        const notifications = await Notification.find({ neededUserId: userId }).populate(
-            {
+        const userId = req.user.id;
+        console.log("User Id -> ", userId);
+        
+        const notifications = await Notification.find({ neededUserId: userId })
+            .populate({
                 path: "donarUserId",
                 select: "name email profile",
                 populate: {
                     path: 'profile',
                     select: 'contactNumber bloodGroup'
                 }
-            }
-        )
+            })
+            .sort({ createdAt: -1 }); 
+
         return res.status(200).json({
             success: true,
             message: 'Notification fetched successfully',
             data: notifications
         });
-
     } catch (error) {
         return res.status(500).json({
             success: false,
@@ -110,7 +111,8 @@ exports.getNotifications = async (req, res) => {
             error: error.message
         });
     }
-}
+};
+
 
 exports.updateNotification = async (req, res) => {
     try {
@@ -141,11 +143,22 @@ exports.updateNotification = async (req, res) => {
     }
 }
 
-exports.updateUserAvailability = async (req, res) => {
+
+exports.updateUserProfile = async (req, res) => {
     try {
-        const { availability } = req.body;
-        console.log("User Id -> ", req.user.id);
-        let userProfile = await Profile.findOneAndUpdate({ user: req.user.id }, { availability }, { new: true });
+        const { fieldsToUpdate } = req.body;
+        const allowedFields = ['availability', 'contactNumber', 'age', 'bloodGroup', 'location'];
+
+        for (const field in fieldsToUpdate) {
+            if (!allowedFields.includes(field)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Field '${field}' is not allowed for updating`
+                });
+            }
+        }
+
+        let userProfile = await Profile.findOneAndUpdate({ user: req.user.id }, fieldsToUpdate, { new: true });
 
         if (!userProfile) {
             return res.status(404).json({
@@ -154,20 +167,27 @@ exports.updateUserAvailability = async (req, res) => {
             });
         }
 
+        const user = await User.findById(req.user.id);
+        user.profile = updatedProfile._id
+        userProfile.user = user._id;
+        await userProfile.save();
+        await user.save();
+
         return res.status(200).json({
             success: true,
-            message: `Availability updated successfully`,
+            message: `Profile updated successfully`,
             data: userProfile
         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({
             success: false,
-            message: 'Failed to update user availability',
+            message: 'Failed to update user profile',
             error: error.message
         });
     }
-}
+};
+
 
 exports.getUserProfile = async (req, res) => {
     try {
