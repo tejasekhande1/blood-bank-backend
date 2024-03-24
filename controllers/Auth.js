@@ -92,13 +92,24 @@ exports.signUp = async (req, res) => {
             bloodGroup: null,
         });
 
-        const user = await User.create({
+        const user = new User({
             name,
             email,
             password: hashedPassword,
             profile: profile._id,
-        }).select("name email profile")
-            .populate('profile');
+        });
+        
+        user.save()
+            .then(savedUser => {
+                return User.populate(savedUser, { path: 'profile' });
+            })
+            .then(populatedUser => {
+                console.log(populatedUser);
+            })
+            .catch(error => {
+                console.error("Error while registering user:", error);
+            });
+        
 
         return res.status(200).json({
             status: true,
