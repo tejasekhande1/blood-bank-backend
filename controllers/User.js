@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Profile = require('../models/Profile');
 const Notification = require('../models/Notification');
+const BloodRequest = require('../models/BloodRequest');
 
 exports.updateProfileDetails = async (req, res) => {
     try {
@@ -45,10 +46,11 @@ exports.updateProfileDetails = async (req, res) => {
 exports.addNotification = async (req, res) => {
     try {
 
-        const { bloodRequestedUserId } = req.body;
+        const { bloodRequestedUserId, bloodRequestId } = req.body;
         const userId = req.user.id
 
         const user = await User.findById(userId);
+        const bloodRequestData = await BloodRequest.findById(bloodRequestId);
 
         if (!user) {
             return res.status(404).json({
@@ -59,7 +61,8 @@ exports.addNotification = async (req, res) => {
 
         const createdNotification = await Notification.create({
             neededUserId: bloodRequestedUserId,
-            donarUserId: userId
+            donarUserId: userId,
+            bloodRequestData:bloodRequestData
         });
 
         const neededUser = await User.findByIdAndUpdate(bloodRequestedUserId, { $push: { notifications: createdNotification._id } }, { new: true })
@@ -86,8 +89,7 @@ exports.addNotification = async (req, res) => {
 exports.getNotifications = async (req, res) => {
     try {
         const userId = req.user.id;
-        console.log("User Id -> ", userId);
-        
+
         const notifications = await Notification.find({ neededUserId: userId })
             .populate({
                 path: "donarUserId",
@@ -97,7 +99,11 @@ exports.getNotifications = async (req, res) => {
                     select: 'contactNumber bloodGroup'
                 }
             })
-            .sort({ createdAt: -1 }); 
+            .populate({
+                path:"bloodRequestData",
+                select:"name bloodGroup contactNumber"
+            })
+            .sort({ createdAt: -1 });
 
         return res.status(200).json({
             success: true,

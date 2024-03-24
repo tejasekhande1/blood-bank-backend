@@ -20,7 +20,12 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         enum: ["read", "unread"],
         default: "unread"
-    }
+    },
+    bloodRequestData: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "BloodRequest",
+        required: true
+    },
 });
 
 module.exports = mongoose.model("Notification", notificationSchema);
