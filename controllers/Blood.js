@@ -1,5 +1,7 @@
 const BloodRequest = require('../models/BloodRequest')
 const User = require('../models/User');
+const iconv = require('iconv-lite');
+
 
 exports.addBloodRequest = async (req, res) => {
     try {
@@ -128,8 +130,9 @@ exports.getBloodRequestsByFilter = async (req, res) => {
             name: { $regex: new RegExp(search, 'i') }
         };
 
+        
         if (bloodGroup) {
-            query.bloodGroup = bloodGroup;
+            query.bloodGroup = decodeURIComponent(bloodGroup);
         }
 
         if (state) {
@@ -172,7 +175,7 @@ exports.searchDonar = async (req, res) => {
             name: { $regex: new RegExp(search, 'i') }
         };
 
-        if (bloodGroup) query.bloodGroup = bloodGroup;
+        if (bloodGroup) query.bloodGroup = decodeURIComponent(bloodGroup);
         if (state) query.state = state;
         if (city) query.city = city;
 
