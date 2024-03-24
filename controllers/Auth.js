@@ -86,18 +86,20 @@ exports.signUp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        const user = new User({
+            name,
+            email,
+            password: hashedPassword,
+        });
+
         const profile = await Profile.create({
+            user:user,
             contactNumber: null,
             age: null,
             bloodGroup: null,
         });
 
-        const user = new User({
-            name,
-            email,
-            password: hashedPassword,
-            profile: profile._id,
-        });
+        user.profile = profile._id;
         
         user.save()
             .then(savedUser => {
