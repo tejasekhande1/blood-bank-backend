@@ -158,11 +158,7 @@ exports.updateUserProfile = async (req, res) => {
             }
         }
 
-        console.log("Fields To Update -> ",fieldsToUpdate);
-
         let userProfile = await Profile.findOneAndUpdate({ user: req.user.id }, fieldsToUpdate, { new: true });
-
-        console.log("User Profile Update -> ",userProfile);
 
         if (!userProfile) {
             return res.status(404).json({
