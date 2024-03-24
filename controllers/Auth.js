@@ -101,7 +101,7 @@ exports.signUp = async (req, res) => {
 
         user.profile = profile._id;
         
-        user.save()
+        user.save() 
             .then(savedUser => {
                 return User.populate(savedUser, { path: 'profile' });
             })
