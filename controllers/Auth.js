@@ -116,7 +116,6 @@ exports.signUp = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: "User registered successfully",
-            data: user,
         });
     } catch (error) {
         return res.status(500).json({

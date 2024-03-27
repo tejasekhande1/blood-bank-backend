@@ -1,7 +1,5 @@
 const BloodRequest = require('../models/BloodRequest')
 const User = require('../models/User');
-const iconv = require('iconv-lite');
-
 
 exports.addBloodRequest = async (req, res) => {
     try {
@@ -22,7 +20,6 @@ exports.addBloodRequest = async (req, res) => {
         return res.status(201).json({
             success: true,
             message: 'Blood request created successfully',
-            data: newBloodRequest
         });
     } catch (error) {
         console.error(error);
