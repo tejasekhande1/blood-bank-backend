@@ -62,7 +62,7 @@ exports.addNotification = async (req, res) => {
         const createdNotification = await Notification.create({
             neededUserId: bloodRequestedUserId,
             donarUserId: userId,
-            bloodRequestData:bloodRequestData
+            bloodRequestData: bloodRequestData
         });
 
         const neededUser = await User.findByIdAndUpdate(bloodRequestedUserId, { $push: { notifications: createdNotification._id } }, { new: true })
@@ -100,8 +100,8 @@ exports.getNotifications = async (req, res) => {
                 }
             })
             .populate({
-                path:"bloodRequestData",
-                select:"name bloodGroup contactNumber"
+                path: "bloodRequestData",
+                select: "name bloodGroup contactNumber"
             })
             .sort({ createdAt: -1 });
 
@@ -210,6 +210,35 @@ exports.getUserProfile = async (req, res) => {
             data: user
         });
 
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to get user profile',
+            error: error.message
+        });
+    }
+}
+
+exports.getDonarUsers = async (req, res) => {
+    try {
+        const profiles = await Profile.find({ "availability": "yes" }).populate({
+            path: "user",
+            select: "name"
+        }).select("bloodGroup age contactNumber")
+
+        const formattedProfiles = profiles.map(profile => ({
+            id: profile._id,
+            name: profile.user.name,
+            bloodGroup: profile.bloodGroup,
+            age: profile.age,
+            contactNumber: profile.contactNumber
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: 'Donars fetched successfully',
+            data: formattedProfiles
+        });
     } catch (error) {
         return res.status(500).json({
             success: false,
